@@ -9,6 +9,9 @@ import com.loansphere.auth.dto.AuthResponse;
 import com.loansphere.auth.dto.LoginRequest;
 import com.loansphere.auth.dto.RegisterRequest;
 import com.loansphere.auth.entity.User;
+import com.loansphere.auth.exception.EmailAlreadyExistsException;
+import com.loansphere.auth.exception.InvalidPasswordException;
+import com.loansphere.auth.exception.UserNotFoundException;
 import com.loansphere.auth.repository.UserRepository;
 import com.loansphere.auth.util.JwtUtil;
 
@@ -32,7 +35,7 @@ public class AuthServiceImpl implements AuthService {
     public String register(RegisterRequest request) {
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new EmailAlreadyExistsException("Email already exists");
         }
 
         User user = new User();
@@ -58,13 +61,13 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(
                 request.getEmail())
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new UserNotFoundException("User not found"));
 
         if (!passwordEncoder.matches(
                 request.getPassword(),
                 user.getPassword())) {
 
-            throw new RuntimeException("Invalid Password");
+            throw new InvalidPasswordException("Invalid Password");
         }
         String token =
                 jwtUtil.generateToken(user.getEmail());

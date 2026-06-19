@@ -11,6 +11,7 @@ import com.loansphere.loan.dto.CustomerProfileDTO;
 import com.loansphere.loan.dto.DashboardResponse;
 import com.loansphere.loan.dto.LoanRequest;
 import com.loansphere.loan.entity.LoanApplication;
+import com.loansphere.loan.exception.LoanNotFoundException;
 import com.loansphere.loan.repository.LoanApplicationRepository;
 
 @Service
@@ -135,7 +136,7 @@ public class LoanServiceImpl
         return repository.findById(
                 applicationId)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new LoanNotFoundException(
                                 "Loan Application Not Found"));
     }
     @Override
@@ -176,7 +177,9 @@ public class LoanServiceImpl
     public LoanApplication applyLoanFallback(
             LoanRequest request,
             Exception ex) {
-
+    	 System.out.println(
+    	            "Fallback Triggered : "
+    	            + ex.getMessage());
         LoanApplication loan =
                 new LoanApplication();
 

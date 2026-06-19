@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 import com.loansphere.user.dto.ProfileRequest;
 import com.loansphere.user.entity.CustomerProfile;
+import com.loansphere.user.exception.ProfileAlreadyExitException;
+import com.loansphere.user.exception.ProfileNotFoundException;
 import com.loansphere.user.repository.CustomerProfileRepository;
 
 @Service
@@ -29,7 +31,7 @@ public class CustomerProfileServiceImpl
                 repository.findByUserId(request.getUserId());
 
         if(existingProfile.isPresent()) {
-            throw new RuntimeException(
+            throw new ProfileAlreadyExitException(
                     "Profile already exists");
         }
 
@@ -61,7 +63,7 @@ public class CustomerProfileServiceImpl
 
         return repository.findByUserId(userId)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ProfileNotFoundException(
                                 "Profile Not Found"));
     }
 }
