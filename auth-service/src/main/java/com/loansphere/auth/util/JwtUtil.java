@@ -2,6 +2,7 @@ package com.loansphere.auth.util;
 
 import java.util.Date;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Jwts;
@@ -9,9 +10,8 @@ import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JwtUtil {
-
-    private static final String SECRET =
-            "mySecretKeyForLoanSphereProject123456789";
+	@Value("${jwt.secret}")
+    private  String secret ;
 
     public String generateToken(String email) {
 
@@ -23,7 +23,7 @@ public class JwtUtil {
                                 + 1000 * 60 * 60))
                 .signWith(
                         Keys.hmacShaKeyFor(
-                                SECRET.getBytes()),
+                        		secret.getBytes()),
                         Jwts.SIG.HS256)
                 .compact();
     }
@@ -33,7 +33,7 @@ public class JwtUtil {
         return Jwts.parser()
                 .verifyWith(
                         Keys.hmacShaKeyFor(
-                                SECRET.getBytes()))
+                        		secret.getBytes()))
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
@@ -46,8 +46,19 @@ public class JwtUtil {
 String extractedEmail =
 extractEmail(token);
 
-return extractedEmail.equals(email);
+return extractedEmail.equals(email)
+	       && !isTokenExpired(token);
 }
-    
+    public boolean isTokenExpired(String token) {
+        Date expiration =
+            Jwts.parser()
+                .verifyWith(Keys.hmacShaKeyFor(secret.getBytes()))
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getExpiration();
+
+        return expiration.before(new Date());
+    }
     
 }
