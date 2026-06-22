@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import com.loansphere.user.dto.ProfileRequest;
 import com.loansphere.user.entity.CustomerProfile;
-import com.loansphere.user.exception.ProfileAlreadyExitException;
 import com.loansphere.user.exception.ProfileNotFoundException;
 import com.loansphere.user.repository.CustomerProfileRepository;
 

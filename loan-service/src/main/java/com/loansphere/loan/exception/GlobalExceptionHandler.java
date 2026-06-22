@@ -18,7 +18,27 @@ public class GlobalExceptionHandler {
                 ex.getMessage(),
                 HttpStatus.NOT_FOUND);
     }
+    
+    @ExceptionHandler(
+    		LoanAlreadyAcceptedExeception.class)
+    public ResponseEntity<String>
+    handleLoanNotFound(
+    		LoanAlreadyAcceptedExeception ex) {
 
+        return new ResponseEntity<>(
+                ex.getMessage(),
+                HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler(
+    		LoanAlreadyCancelledExeception.class)
+    public ResponseEntity<String>
+    handleLoanNotFound(
+    		LoanAlreadyCancelledExeception ex) {
+
+        return new ResponseEntity<>(
+                ex.getMessage(),
+                HttpStatus.BAD_REQUEST);
+    }
     @ExceptionHandler(
             Exception.class)
     public ResponseEntity<String>
