@@ -73,4 +73,11 @@ public class AuthServiceImpl implements AuthService {
                 jwtUtil.generateToken(user.getEmail());
         return new AuthResponse(token);
     }
+
+    @Override
+    public com.loansphere.auth.dto.UserResponse getUserDetailsByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        return new com.loansphere.auth.dto.UserResponse(user.getUserId(), user.getName(), user.getEmail());
+    }
 }

@@ -163,6 +163,7 @@ public class LoanServiceImpl
         double amount =
                 repository.findAll()
                         .stream()
+                        .filter(loan -> "APPROVED".equalsIgnoreCase(loan.getStatus()))
                         .mapToDouble(
                                 LoanApplication
                                         ::getLoanAmount)
