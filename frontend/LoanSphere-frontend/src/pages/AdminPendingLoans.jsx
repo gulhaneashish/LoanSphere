@@ -147,7 +147,7 @@ function AdminPendingLoans() {
                           <div>
                             <span className="text-muted d-block" style={{ fontSize: "0.8rem", textTransform: "uppercase" }}>Amount / Term</span>
                             <span className="fw-bold text-dark fs-5">
-                              ${loan.loanAmount?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                              ₹{loan.loanAmount?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                             </span>
                             <span className="text-muted" style={{ fontSize: "0.9rem" }}>
                               {" "}for {loan.loanTenure} Months

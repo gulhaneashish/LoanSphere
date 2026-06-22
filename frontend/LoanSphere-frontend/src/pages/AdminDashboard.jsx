@@ -140,7 +140,7 @@ function AdminDashboard() {
                 <FiDollarSign size={24} />
               </div>
               <div className="metric-details">
-                <h3>${(stats.totalLoanAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</h3>
+                <h3>₹{(stats.totalLoanAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</h3>
                 <p>Total Funds Disbursed (Approved Loans)</p>
               </div>
             </div>
@@ -171,7 +171,6 @@ function AdminDashboard() {
               <table className="table table-hover table-custom m-0">
                 <thead>
                   <tr>
-                    <th>App ID</th>
                     <th>User ID</th>
                     <th>Loan Type</th>
                     <th>Amount</th>
@@ -184,13 +183,12 @@ function AdminDashboard() {
                 <tbody>
                   {allLoans.map((loan) => (
                     <tr key={loan.applicationId}>
-                      <td className="fw-semibold">#{loan.applicationId}</td>
                       <td>{loan.userId}</td>
                       <td>
                         {loan.loanType ? loan.loanType.replace("_", " ") : "N/A"}
                       </td>
                       <td className="fw-semibold">
-                        ${loan.loanAmount?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        ₹{loan.loanAmount?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </td>
                       <td>
                         <span className={`badge-risk ${getRiskBadgeClass(loan.riskLevel)}`}>
@@ -198,7 +196,7 @@ function AdminDashboard() {
                         </span>
                       </td>
                       <td className="fw-semibold">
-                        ${loan.monthlyEmi?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        ₹{loan.monthlyEmi?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </td>
                       <td>
                         <span className={`badge-status ${getStatusBadgeClass(loan.adminAction === "CANCELLED" ? "rejected" : loan.adminAction === "ACCEPTED" ? "approved" : "pending")}`}>

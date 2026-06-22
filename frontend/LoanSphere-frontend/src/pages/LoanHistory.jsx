@@ -97,7 +97,6 @@ function LoanHistory() {
                 <table className="table table-custom">
                   <thead>
                     <tr>
-                      <th>ID</th>
                       <th>Amount</th>
                       <th>Status</th>
                       <th>Risk</th>
@@ -108,9 +107,8 @@ function LoanHistory() {
                   <tbody>
                     {loans.map((loan) => (
                       <tr key={loan.applicationId}>
-                        <td className="fw-semibold">#{loan.applicationId}</td>
                         <td className="fw-semibold">
-                          ${loan.loanAmount?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          ₹{loan.loanAmount?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </td>
                         <td>
                           <span className={`badge-status ${getStatusBadgeClass(loan.status)}`}>
@@ -124,7 +122,7 @@ function LoanHistory() {
                         </td>
                         <td className="fw-semibold">{loan.eligibilityScore ?? "N/A"}</td>
                         <td className="fw-semibold">
-                          ${loan.monthlyEmi?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          ₹{loan.monthlyEmi?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </td>
                       </tr>
                     ))}

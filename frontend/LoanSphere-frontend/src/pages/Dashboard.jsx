@@ -160,7 +160,7 @@ function Dashboard() {
                 </div>
               </div>
               <div className="stat-info">
-                <h3>${dashboard.totalLoanAmount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h3>
+                <h3>₹{dashboard.totalLoanAmount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h3>
                 <span className="stat-desc">Approved principal</span>
               </div>
             </div>
@@ -182,7 +182,6 @@ function Dashboard() {
               <table className="table table-custom">
                 <thead>
                   <tr>
-                    <th>App ID</th>
                     <th>Loan Type</th>
                     <th>Amount</th>
                     <th>Risk Level</th>
@@ -193,12 +192,11 @@ function Dashboard() {
                 <tbody>
                   {recentLoans.map((loan) => (
                     <tr key={loan.applicationId}>
-                      <td className="fw-semibold">#{loan.applicationId}</td>
                       <td>
                         {loan.loanType ? loan.loanType.replace("_", " ") : "N/A"}
                       </td>
                       <td className="fw-semibold">
-                        ${loan.loanAmount?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        ₹{loan.loanAmount?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </td>
                       <td>
                         <span className={`badge-risk ${getRiskBadgeClass(loan.riskLevel)}`}>
@@ -206,7 +204,7 @@ function Dashboard() {
                         </span>
                       </td>
                       <td className="fw-semibold">
-                        ${loan.monthlyEmi?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        ₹{loan.monthlyEmi?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </td>
                       <td>
                         <span className={`badge-status ${getStatusBadgeClass(loan.status)}`}>

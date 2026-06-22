@@ -76,7 +76,7 @@ function AdminUserDetails() {
                 <tbody>
                   {profiles.map((profile) => (
                     <tr key={profile.id || profile.userId}>
-                      <td className="fw-semibold">#{profile.userId}</td>
+                      <td className="fw-semibold">{profile.userId}</td>
                       <td className="fw-bold text-dark">{profile.fullName || "N/A"}</td>
                       <td>{profile.age ? `${profile.age} Yrs` : "N/A"}</td>
                       <td>{profile.mobileNumber || "N/A"}</td>
@@ -87,7 +87,7 @@ function AdminUserDetails() {
                       </td>
                       <td>{profile.experienceYears !== undefined ? `${profile.experienceYears} Yrs` : "N/A"}</td>
                       <td className="fw-bold text-success">
-                        {profile.salary ? `$${profile.salary.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : "N/A"}
+                        {profile.salary ? `₹${profile.salary.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : "N/A"}
                       </td>
                       <td className="font-monospace fw-semibold" style={{ fontSize: "0.85rem", letterSpacing: "0.5px" }}>
                         {profile.panNumber || "N/A"}

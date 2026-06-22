@@ -135,10 +135,10 @@ function ApplyLoan() {
                 <form onSubmit={handleSubmit}>
                   {/* Loan Amount */}
                   <div className="mb-4">
-                    <label className="form-label fw-semibold">Loan Amount ($) *</label>
+                    <label className="form-label fw-semibold">Loan Amount (₹) *</label>
                     <div className="input-group">
-                      <span className="input-group-text bg-light">
-                        <FiDollarSign className="text-muted" />
+                      <span className="input-group-text bg-light fw-semibold text-muted">
+                        ₹
                       </span>
                       <input
                         type="number"
