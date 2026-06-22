@@ -44,22 +44,30 @@ public class JwtAuthenticationFilter
 				}
 		String token =
 		        authHeader.substring(7);
-		String email =
-		        jwtUtil.extractEmail(token);
-		UserDetails userDetails =
-		        userDetailsService
-		        .loadUserByUsername(email);
 		
-		if(jwtUtil.validateToken(token, email)) {
+		try {
+			String email =
+			        jwtUtil.extractEmail(token);
+			if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+				UserDetails userDetails =
+				        userDetailsService
+				        .loadUserByUsername(email);
+				
+				if(jwtUtil.validateToken(token, email)) {
+				    UsernamePasswordAuthenticationToken authToken =
+				            new UsernamePasswordAuthenticationToken(
+				                    userDetails,
+				                    null,
+				                    userDetails.getAuthorities());
 
-		    UsernamePasswordAuthenticationToken authToken =
-		            new UsernamePasswordAuthenticationToken(
-		                    userDetails,
-		                    null,
-		                    userDetails.getAuthorities());
-
-		    SecurityContextHolder.getContext()
-		            .setAuthentication(authToken);
+				    SecurityContextHolder.getContext()
+				            .setAuthentication(authToken);
+				}
+			}
+		} catch (Exception e) {
+			// Catch any JWT-related exceptions (e.g. signature verification failed, expired, malformed, null/empty)
+			// and let the request proceed. The SecurityContext remains unauthenticated,
+			// so protected routes will still be blocked, but public routes can proceed.
 		}
 		
 		filterChain.doFilter(request,response);

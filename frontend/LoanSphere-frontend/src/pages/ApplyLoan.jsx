@@ -1,5 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { applyLoan } from "../services/loanService";
+import { getCurrentUser } from "../services/authService";
+import Navbar from "../components/Navbar";
+import { FiDollarSign, FiClock, FiFileText } from "react-icons/fi";
+import "./Dashboard.css";
 
 function ApplyLoan() {
   const [loan, setLoan] = useState({
@@ -9,123 +13,214 @@ function ApplyLoan() {
     loanType: "",
   });
 
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      setLoading(true);
+      setMessage({ type: "", text: "" });
+      try {
+        const userRes = await getCurrentUser();
+        if (userRes && userRes.data && userRes.data.userId) {
+          setLoan((prev) => ({
+            ...prev,
+            userId: userRes.data.userId,
+          }));
+        } else {
+          setMessage({
+            type: "danger",
+            text: "Failed to retrieve user ID. Please log in again.",
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching user info:", error);
+        setMessage({
+          type: "danger",
+          text: "Session expired or user service offline. Please log in again.",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUser();
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
+    setMessage({ type: "", text: "" });
+
+    if (!loan.userId) {
+      setMessage({
+        type: "danger",
+        text: "User session not active. Cannot submit loan application.",
+      });
+      setSubmitting(false);
+      return;
+    }
+
+    if (!loan.loanAmount || !loan.loanTenure || !loan.loanType) {
+      setMessage({
+        type: "danger",
+        text: "Please fill in all the required fields.",
+      });
+      setSubmitting(false);
+      return;
+    }
 
     try {
       await applyLoan(loan);
-      alert("Loan Applied Successfully");
+      setMessage({
+        type: "success",
+        text: "Loan application submitted successfully!",
+      });
+      // Reset form fields except userId
+      setLoan((prev) => ({
+        ...prev,
+        loanAmount: "",
+        loanTenure: "",
+        loanType: "",
+      }));
     } catch (error) {
-      alert("Loan Application Failed");
+      console.error("Loan application failed:", error);
+      const backendError = error.response?.data;
+      setMessage({
+        type: "danger",
+        text: typeof backendError === "string" ? backendError : "Loan application failed. Please try again.",
+      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div
-      className="d-flex justify-content-center align-items-center"
-      style={{
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #667eea, #764ba2)",
-      }}
-    >
-      <div
-        className="card shadow-lg p-4"
-        style={{
-          width: "500px",
-          borderRadius: "20px",
-          border: "none",
-        }}
-      >
-        <div className="text-center mb-4">
-          <h2 className="fw-bold text-primary">🏦 Apply for Loan</h2>
-          <p className="text-muted">
-            Fill in the details to submit your loan application
+    <div className="dashboard-container">
+      <Navbar />
+
+      <div className="container">
+        {/* Welcome Banner Card */}
+        <div className="welcome-banner">
+          <h2>Apply for a New Loan</h2>
+          <p>
+            Submit your application details below. Our automated evaluation engine
+            will compute your eligibility rank, interest rates, and approval status dynamically.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label className="form-label fw-semibold">
-              User ID
-            </label>
-            <input
-              type="number"
-              className="form-control"
-              placeholder="Enter User ID"
-              onChange={(e) =>
-                setLoan({
-                  ...loan,
-                  userId: e.target.value,
-                })
-              }
-            />
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label fw-semibold">
-              Loan Amount
-            </label>
-            <input
-              type="number"
-              className="form-control"
-              placeholder="Enter Loan Amount"
-              onChange={(e) =>
-                setLoan({
-                  ...loan,
-                  loanAmount: e.target.value,
-                })
-              }
-            />
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label fw-semibold">
-              Loan Tenure (Months)
-            </label>
-            <input
-              type="number"
-              className="form-control"
-              placeholder="Enter Loan Tenure"
-              onChange={(e) =>
-                setLoan({
-                  ...loan,
-                  loanTenure: e.target.value,
-                })
-              }
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="form-label fw-semibold">
-              Loan Type
-            </label>
-            <select
-              className="form-select"
-              onChange={(e) =>
-                setLoan({
-                  ...loan,
-                  loanType: e.target.value,
-                })
-              }
-            >
-              <option value="">Select Loan Type</option>
-              <option value="HOME_LOAN">🏠 Home Loan</option>
-              <option value="PERSONAL_LOAN">💰 Personal Loan</option>
-              <option value="CAR_LOAN">🚗 Car Loan</option>
-              <option value="EDUCATION_LOAN">🎓 Education Loan</option>
-            </select>
-          </div>
-
-          <button
-            type="submit"
-            className="btn btn-primary w-100 py-2 fw-bold"
-            style={{
-              borderRadius: "10px",
-            }}
+        {message.text && (
+          <div
+            className={`alert alert-${message.type} mb-4 py-3 text-center`}
+            role="alert"
+            style={{ borderRadius: "12px", fontSize: "0.95rem" }}
           >
-            Apply Loan
-          </button>
-        </form>
+            {message.text}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading session...</span>
+            </div>
+            <p className="mt-3 text-muted">Securing session and fetching credentials...</p>
+          </div>
+        ) : (
+          <div className="row justify-content-center">
+            <div className="col-lg-8">
+              <div className="card border-0 shadow-sm p-4" style={{ borderRadius: "12px" }}>
+                <h4 className="fw-bold mb-4 text-primary">📝 Loan Application Form</h4>
+                
+                <form onSubmit={handleSubmit}>
+                  {/* Loan Amount */}
+                  <div className="mb-4">
+                    <label className="form-label fw-semibold">Loan Amount ($) *</label>
+                    <div className="input-group">
+                      <span className="input-group-text bg-light">
+                        <FiDollarSign className="text-muted" />
+                      </span>
+                      <input
+                        type="number"
+                        required
+                        className="form-control"
+                        placeholder="e.g. 50000"
+                        value={loan.loanAmount}
+                        onChange={(e) =>
+                          setLoan({
+                            ...loan,
+                            loanAmount: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  {/* Loan Tenure */}
+                  <div className="mb-4">
+                    <label className="form-label fw-semibold">Loan Tenure (Months) *</label>
+                    <div className="input-group">
+                      <span className="input-group-text bg-light">
+                        <FiClock className="text-muted" />
+                      </span>
+                      <input
+                        type="number"
+                        required
+                        className="form-control"
+                        placeholder="e.g. 24"
+                        value={loan.loanTenure}
+                        onChange={(e) =>
+                          setLoan({
+                            ...loan,
+                            loanTenure: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  {/* Loan Type */}
+                  <div className="mb-4">
+                    <label className="form-label fw-semibold">Loan Type *</label>
+                    <div className="input-group">
+                      <span className="input-group-text bg-light">
+                        <FiFileText className="text-muted" />
+                      </span>
+                      <select
+                        className="form-select"
+                        required
+                        value={loan.loanType}
+                        onChange={(e) =>
+                          setLoan({
+                            ...loan,
+                            loanType: e.target.value,
+                          })
+                        }
+                      >
+                        <option value="">Select Loan Type</option>
+                        <option value="HOME_LOAN">🏠 Home Loan</option>
+                        <option value="PERSONAL_LOAN">💰 Personal Loan</option>
+                        <option value="CAR_LOAN">🚗 Car Loan</option>
+                        <option value="EDUCATION_LOAN">🎓 Education Loan</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 text-end">
+                    <button
+                      type="submit"
+                      className="btn btn-primary px-5 py-2 fw-bold"
+                      disabled={submitting}
+                      style={{ borderRadius: "8px" }}
+                    >
+                      {submitting ? "Submitting Application..." : "Submit Loan Application"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

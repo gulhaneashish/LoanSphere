@@ -27,18 +27,17 @@ public class CustomerProfileServiceImpl
     @Override
     public String createProfile(ProfileRequest request) {
 
-        Optional<CustomerProfile> existingProfile =
+        Optional<CustomerProfile> existingProfileOpt =
                 repository.findByUserId(request.getUserId());
 
-        if(existingProfile.isPresent()) {
-            throw new ProfileAlreadyExitException(
-                    "Profile already exists");
+        CustomerProfile profile;
+        if (existingProfileOpt.isPresent()) {
+            profile = existingProfileOpt.get();
+        } else {
+            profile = new CustomerProfile();
+            profile.setUserId(request.getUserId());
         }
 
-        CustomerProfile profile =
-                new CustomerProfile();
-
-        profile.setUserId(request.getUserId());
         profile.setFullName(request.getFullName());
         profile.setAge(request.getAge());
         profile.setSalary(request.getSalary());
@@ -55,7 +54,7 @@ public class CustomerProfileServiceImpl
 
         repository.save(profile);
 
-        return "Profile Created Successfully";
+        return existingProfileOpt.isPresent() ? "Profile Updated Successfully" : "Profile Created Successfully";
     }
 
     @Override
