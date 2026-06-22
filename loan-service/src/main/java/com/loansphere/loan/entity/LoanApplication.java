@@ -33,6 +33,8 @@ public class LoanApplication {
     private Integer eligibilityScore;
     
     private Double monthlyEmi;
+   
+    private String adminAction;
 
     private LocalDateTime createdAt;
 }

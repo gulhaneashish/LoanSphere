@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import com.loansphere.loan.client.UserServiceClient;
+import com.loansphere.loan.dto.AdminDashboardResponse;
 import com.loansphere.loan.dto.CustomerProfileDTO;
 import com.loansphere.loan.dto.DashboardResponse;
 import com.loansphere.loan.dto.LoanRequest;
@@ -97,7 +98,7 @@ public class LoanServiceImpl
             loan.setRiskLevel("HIGH");
             loan.setStatus("REJECTED");
         }
-        
+        loan.setAdminAction("PENDING");
         Double emi =
                 calculateEMI(
                         request.getLoanAmount(),
@@ -174,6 +175,77 @@ public class LoanServiceImpl
                 amount);
     }
     
+    @Override
+    public LoanApplication acceptLoan(
+            Long id) {
+
+        LoanApplication loan =
+                repository.findById(id)
+                        .orElseThrow(() ->
+                                new LoanNotFoundException(
+                                        "Loan Not Found"));
+        if("CANCELLED".equals(loan.getAdminAction())) {
+            throw new RuntimeException(
+                    "Loan already cancelled");
+        }
+        loan.setAdminAction("ACCEPTED");
+
+        return repository.save(loan);
+    }
+    
+    @Override
+    public LoanApplication cancelLoan(
+            Long id) {
+
+        LoanApplication loan =
+                repository.findById(id)
+                        .orElseThrow(() ->
+                                new LoanNotFoundException(
+                                        "Loan Not Found"));
+        if("ACCEPTED".equals(loan.getAdminAction())) {
+            throw new RuntimeException(
+                    "Loan already accepted");
+        }
+        loan.setAdminAction("CANCELLED");
+
+        return repository.save(loan);
+    }
+    @Override
+    public AdminDashboardResponse
+    getAdminDashboard() {
+
+        long total =
+                repository.count();
+
+        long pending =
+                repository.countByAdminAction(
+                        "PENDING");
+
+        long cancelled =
+                repository.countByAdminAction(
+                        "CANCELLED");
+
+        long approved =
+                repository.countByStatus(
+                        "APPROVED");
+
+        long rejected =
+                repository.countByStatus(
+                        "REJECTED");
+
+        return new AdminDashboardResponse(
+                total,
+                pending,
+                approved,
+                rejected,
+                cancelled);
+    }
+    @Override
+    public List<LoanApplication> getPendingLoans() {
+
+        return repository.findByAdminAction(
+                "PENDING");
+    }
     public LoanApplication applyLoanFallback(
             LoanRequest request,
             Exception ex) {
@@ -188,8 +260,9 @@ public class LoanServiceImpl
         loan.setLoanTenure(request.getLoanTenure());
         loan.setLoanType(request.getLoanType());
 
-        loan.setStatus("PENDING");
+        loan.setStatus("UNKNOWN");
         loan.setRiskLevel("UNKNOWN");
+        loan.setAdminAction("PENDING");
         loan.setEligibilityScore(0);
 
         Double emi =

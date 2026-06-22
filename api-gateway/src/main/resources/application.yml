@@ -42,6 +42,11 @@ spring:
               predicates:
                 - Path=/api/loan/**
 
+            - id: admin-loan-service
+              uri: lb://LOAN-SERVICE
+              predicates:
+                - Path=/api/admin/**
+
 eureka:
   client:
     service-url:
