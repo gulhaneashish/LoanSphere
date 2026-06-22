@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getDashboard, getAllLoans } from "../services/loanService";
+import { getCurrentUser } from "../services/authService";
 import Navbar from "../components/Navbar";
 import { FiFileText, FiCheckCircle, FiXCircle, FiDollarSign } from "react-icons/fi";
 import "./Dashboard.css";
@@ -27,20 +28,33 @@ function Dashboard() {
         console.error("Error decoding JWT token:", error);
       }
     }
-    loadDashboardData();
+
+    const fetchUserAndLoadData = async () => {
+      try {
+        const userRes = await getCurrentUser();
+        if (userRes && userRes.data && userRes.data.userId) {
+          loadDashboardData(userRes.data.userId);
+        }
+      } catch (error) {
+        console.error("Error fetching user details in Dashboard:", error);
+      }
+    };
+    fetchUserAndLoadData();
   }, []);
 
-  const loadDashboardData = async () => {
+  const loadDashboardData = async (userId) => {
     try {
-      const response = await getDashboard();
+      const response = await getDashboard(userId);
       if (response && response.data) {
         setDashboard(response.data);
       }
 
       const loansRes = await getAllLoans();
       if (loansRes && loansRes.data) {
+        // Filter by user ID first
+        const userLoans = loansRes.data.filter(loan => loan.userId === userId);
         // Sort by application ID descending
-        const sorted = loansRes.data.sort((a, b) => b.applicationId - a.applicationId);
+        const sorted = userLoans.sort((a, b) => b.applicationId - a.applicationId);
         setRecentLoans(sorted.slice(0, 5)); // show top 5 recent loans
       }
     } catch (error) {
@@ -169,7 +183,6 @@ function Dashboard() {
                 <thead>
                   <tr>
                     <th>App ID</th>
-                    <th>User ID</th>
                     <th>Loan Type</th>
                     <th>Amount</th>
                     <th>Risk Level</th>
@@ -181,7 +194,6 @@ function Dashboard() {
                   {recentLoans.map((loan) => (
                     <tr key={loan.applicationId}>
                       <td className="fw-semibold">#{loan.applicationId}</td>
-                      <td>{loan.userId}</td>
                       <td>
                         {loan.loanType ? loan.loanType.replace("_", " ") : "N/A"}
                       </td>

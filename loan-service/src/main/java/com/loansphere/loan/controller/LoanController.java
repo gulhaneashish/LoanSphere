@@ -23,8 +23,7 @@ public class LoanController {
     }
 
     @PostMapping("/apply")
-    public ResponseEntity<LoanApplication>
-            applyLoan(
+    public ResponseEntity<LoanApplication> applyLoan(
             @RequestBody LoanRequest request) {
 
         return ResponseEntity.ok(
@@ -32,27 +31,24 @@ public class LoanController {
     }
 
     @GetMapping("/{applicationId}")
-    public ResponseEntity<LoanApplication>
-            getLoan(
+    public ResponseEntity<LoanApplication> getLoan(
             @PathVariable Long applicationId) {
 
         return ResponseEntity.ok(
                 service.getLoan(applicationId));
     }
-    
+
     @GetMapping
-    public ResponseEntity<List<LoanApplication>>
-    getAllLoans() {
+    public ResponseEntity<List<LoanApplication>> getAllLoans() {
 
         return ResponseEntity.ok(
                 service.getAllLoans());
     }
-    
+
     @GetMapping("/dashboard")
-    public ResponseEntity<DashboardResponse>
-    getDashboard() {
+    public ResponseEntity<DashboardResponse> getDashboard(@RequestParam Long userId) {
 
         return ResponseEntity.ok(
-                service.getDashboard());
+                service.getDashboard(userId));
     }
 }

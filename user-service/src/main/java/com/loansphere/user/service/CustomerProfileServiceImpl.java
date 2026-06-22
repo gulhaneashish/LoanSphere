@@ -1,7 +1,6 @@
 package com.loansphere.user.service;
 
-
-
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -63,5 +62,10 @@ public class CustomerProfileServiceImpl
                 .orElseThrow(() ->
                         new ProfileNotFoundException(
                                 "Profile Not Found"));
+    }
+
+    @Override
+    public List<CustomerProfile> getAllProfiles() {
+        return repository.findAll();
     }
 }

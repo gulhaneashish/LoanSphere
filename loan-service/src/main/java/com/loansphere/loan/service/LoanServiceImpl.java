@@ -17,264 +17,252 @@ import com.loansphere.loan.repository.LoanApplicationRepository;
 
 @Service
 public class LoanServiceImpl
-        implements LoanService {
+                implements LoanService {
 
-    private final LoanApplicationRepository repository;
+        private final LoanApplicationRepository repository;
 
-    private final UserServiceClient userServiceClient;
+        private final UserServiceClient userServiceClient;
 
-    public LoanServiceImpl(
-            LoanApplicationRepository repository,
-            UserServiceClient userServiceClient) {
+        public LoanServiceImpl(
+                        LoanApplicationRepository repository,
+                        UserServiceClient userServiceClient) {
 
-        this.repository = repository;
-        this.userServiceClient = userServiceClient;
-    }
-
-    @Override
-    @CircuitBreaker(
-            name = "userService",
-            fallbackMethod = "applyLoanFallback")
-    public LoanApplication applyLoan(
-            LoanRequest request) {
-    	 System.out.println("UserId = " + request.getUserId());
-        LoanApplication loan =
-                new LoanApplication();
-
-        loan.setUserId(request.getUserId());
-        loan.setLoanAmount(
-                request.getLoanAmount());
-        loan.setLoanTenure(
-                request.getLoanTenure());
-        loan.setLoanType(
-                request.getLoanType());
-
-        // Basic Eligibility Logic
-
-        CustomerProfileDTO profile =
-                userServiceClient.getProfile(
-                        request.getUserId());
-
-        int score = 0;
-
-        if(profile != null) {
-
-            if(profile.getSalary() != null
-                    && profile.getSalary() >= 100000)
-                score += 40;
-
-            if(profile.getExperienceYears() != null
-                    && profile.getExperienceYears() >= 5)
-                score += 30;
-
-            if(profile.getAge() != null
-                    && profile.getAge() >= 25
-                    && profile.getAge() <= 50)
-                score += 20;
-
-            if(profile.getEmploymentType() != null
-                    && ("PRIVATE".equalsIgnoreCase(
-                            profile.getEmploymentType())
-                    || "GOVERNMENT".equalsIgnoreCase(
-                            profile.getEmploymentType())))
-                score += 10;
+                this.repository = repository;
+                this.userServiceClient = userServiceClient;
         }
-        loan.setEligibilityScore(score);
 
-        if(score >= 80) {
+        @Override
+        @CircuitBreaker(name = "userService", fallbackMethod = "applyLoanFallback")
+        public LoanApplication applyLoan(
+                        LoanRequest request) {
+                System.out.println("UserId = " + request.getUserId());
+                LoanApplication loan = new LoanApplication();
 
-            loan.setRiskLevel("LOW");
-            loan.setStatus("APPROVED");
+                loan.setUserId(request.getUserId());
+                loan.setLoanAmount(
+                                request.getLoanAmount());
+                loan.setLoanTenure(
+                                request.getLoanTenure());
+                loan.setLoanType(
+                                request.getLoanType());
 
+                // Basic Eligibility Logic
+
+                CustomerProfileDTO profile = userServiceClient.getProfile(
+                                request.getUserId());
+
+                int score = 0;
+
+                if (profile != null) {
+
+                        if (profile.getSalary() != null
+                                        && profile.getSalary() >= 100000)
+                                score += 40;
+
+                        if (profile.getExperienceYears() != null
+                                        && profile.getExperienceYears() >= 5)
+                                score += 30;
+
+                        if (profile.getAge() != null
+                                        && profile.getAge() >= 25
+                                        && profile.getAge() <= 50)
+                                score += 20;
+
+                        if (profile.getEmploymentType() != null
+                                        && ("PRIVATE".equalsIgnoreCase(
+                                                        profile.getEmploymentType())
+                                                        || "GOVERNMENT".equalsIgnoreCase(
+                                                                        profile.getEmploymentType())))
+                                score += 10;
+                }
+                loan.setEligibilityScore(score);
+
+                if (score >= 80) {
+
+                        loan.setRiskLevel("LOW");
+
+                } else if (score >= 60) {
+
+                        loan.setRiskLevel("MEDIUM");
+
+                } else {
+
+                        loan.setRiskLevel("HIGH");
+                }
+                loan.setStatus("PENDING");
+                loan.setAdminAction("PENDING");
+                Double emi = calculateEMI(
+                                request.getLoanAmount(),
+                                request.getLoanTenure());
+
+                loan.setMonthlyEmi(emi);
+
+                loan.setCreatedAt(LocalDateTime.now());
+
+                return repository.save(loan);
         }
-        else if(score >= 60) {
 
-            loan.setRiskLevel("MEDIUM");
-            loan.setStatus("APPROVED");
+        private Double calculateEMI(
+                        Double principal,
+                        Integer month) {
 
+                double annualInterestRate = 8.5;
+
+                double monthlyRate = annualInterestRate / 12 / 100;
+
+                int months = month;
+
+                double emi = (principal * monthlyRate *
+                                Math.pow(1 + monthlyRate, months))
+                                /
+                                (Math.pow(1 + monthlyRate, months) - 1);
+
+                return Math.round(emi * 100.0) / 100.0;
         }
-        else {
 
-            loan.setRiskLevel("HIGH");
-            loan.setStatus("REJECTED");
+        @Override
+        public LoanApplication getLoan(
+                        Long applicationId) {
+
+                return repository.findById(
+                                applicationId)
+                                .orElseThrow(() -> new LoanNotFoundException(
+                                                "Loan Application Not Found"));
         }
-        loan.setAdminAction("PENDING");
-        Double emi =
-                calculateEMI(
-                        request.getLoanAmount(),
-                        request.getLoanTenure());
 
-        loan.setMonthlyEmi(emi);
+        @Override
+        public List<LoanApplication> getAllLoans() {
 
-        loan.setCreatedAt(LocalDateTime.now());
-
-        return repository.save(loan);
-    }
-    private Double calculateEMI(
-            Double principal,
-            Integer years) {
-
-        double annualInterestRate = 8.5;
-
-        double monthlyRate =
-                annualInterestRate / 12 / 100;
-
-        int months = years * 12;
-
-        double emi =
-                (principal * monthlyRate *
-                        Math.pow(1 + monthlyRate, months))
-                        /
-                        (Math.pow(1 + monthlyRate, months) - 1);
-
-        return Math.round(emi * 100.0) / 100.0;
-    }
-
-    @Override
-    public LoanApplication getLoan(
-            Long applicationId) {
-
-        return repository.findById(
-                applicationId)
-                .orElseThrow(() ->
-                        new LoanNotFoundException(
-                                "Loan Application Not Found"));
-    }
-    @Override
-    public List<LoanApplication> getAllLoans() {
-
-        return repository.findAll();
-    }
-    
-    @Override
-    public DashboardResponse getDashboard() {
-
-        long total =
-                repository.count();
-
-        long approved =
-                repository.countByStatus(
-                        "APPROVED");
-
-        long rejected =
-                repository.countByStatus(
-                        "REJECTED");
-
-        double amount =
-                repository.findAll()
-                        .stream()
-                        .filter(loan -> "APPROVED".equalsIgnoreCase(loan.getStatus()))
-                        .mapToDouble(
-                                LoanApplication
-                                        ::getLoanAmount)
-                        .sum();
-
-        return new DashboardResponse(
-                total,
-                approved,
-                rejected,
-                amount);
-    }
-    
-    @Override
-    public LoanApplication acceptLoan(
-            Long id) {
-
-        LoanApplication loan =
-                repository.findById(id)
-                        .orElseThrow(() ->
-                                new LoanNotFoundException(
-                                        "Loan Not Found"));
-        if("CANCELLED".equals(loan.getAdminAction())) {
-            throw new RuntimeException(
-                    "Loan already cancelled");
+                return repository.findAll();
         }
-        loan.setAdminAction("ACCEPTED");
 
-        return repository.save(loan);
-    }
-    
-    @Override
-    public LoanApplication cancelLoan(
-            Long id) {
+        @Override
+        public DashboardResponse getDashboard(Long userId) {
 
-        LoanApplication loan =
-                repository.findById(id)
-                        .orElseThrow(() ->
-                                new LoanNotFoundException(
-                                        "Loan Not Found"));
-        if("ACCEPTED".equals(loan.getAdminAction())) {
-            throw new RuntimeException(
-                    "Loan already accepted");
+                List<LoanApplication> userLoans = repository.findByUserId(userId);
+
+                long total = userLoans.size();
+
+                long approved = userLoans.stream()
+                                .filter(loan -> "APPROVED".equalsIgnoreCase(loan.getStatus()))
+                                .count();
+
+                long rejected = userLoans.stream()
+                                .filter(loan -> "REJECTED".equalsIgnoreCase(loan.getStatus()))
+                                .count();
+
+                double amount = userLoans.stream()
+                                .filter(loan -> "APPROVED".equalsIgnoreCase(loan.getStatus()))
+                                .mapToDouble(LoanApplication::getLoanAmount)
+                                .sum();
+
+                return new DashboardResponse(
+                                total,
+                                approved,
+                                rejected,
+                                amount);
         }
-        loan.setAdminAction("CANCELLED");
 
-        return repository.save(loan);
-    }
-    @Override
-    public AdminDashboardResponse
-    getAdminDashboard() {
+        @Override
+        public LoanApplication acceptLoan(
+                        Long id) {
 
-        long total =
-                repository.count();
+                LoanApplication loan = repository.findById(id)
+                                .orElseThrow(() -> new LoanNotFoundException(
+                                                "Loan Not Found"));
+                if ("CANCELLED".equals(loan.getAdminAction())) {
+                        throw new RuntimeException(
+                                        "Loan already cancelled");
+                }
+                loan.setAdminAction("ACCEPTED");
+                loan.setStatus("APPROVED");
 
-        long pending =
-                repository.countByAdminAction(
-                        "PENDING");
+                return repository.save(loan);
+        }
 
-        long cancelled =
-                repository.countByAdminAction(
-                        "CANCELLED");
+        @Override
+        public LoanApplication cancelLoan(
+                        Long id) {
 
-        long approved =
-                repository.countByStatus(
-                        "APPROVED");
+                LoanApplication loan = repository.findById(id)
+                                .orElseThrow(() -> new LoanNotFoundException(
+                                                "Loan Not Found"));
+                if ("ACCEPTED".equals(loan.getAdminAction())) {
+                        throw new RuntimeException(
+                                        "Loan already accepted");
+                }
+                loan.setAdminAction("CANCELLED");
+                loan.setStatus("REJECTED");
 
-        long rejected =
-                repository.countByStatus(
-                        "REJECTED");
+                return repository.save(loan);
+        }
 
-        return new AdminDashboardResponse(
-                total,
-                pending,
-                approved,
-                rejected,
-                cancelled);
-    }
-    @Override
-    public List<LoanApplication> getPendingLoans() {
+        @Override
+        public AdminDashboardResponse getAdminDashboard() {
 
-        return repository.findByAdminAction(
-                "PENDING");
-    }
-    public LoanApplication applyLoanFallback(
-            LoanRequest request,
-            Exception ex) {
-    	 System.out.println(
-    	            "Fallback Triggered : "
-    	            + ex.getMessage());
-        LoanApplication loan =
-                new LoanApplication();
+                long total = repository.count();
 
-        loan.setUserId(request.getUserId());
-        loan.setLoanAmount(request.getLoanAmount());
-        loan.setLoanTenure(request.getLoanTenure());
-        loan.setLoanType(request.getLoanType());
+                long pending = repository.countByAdminAction(
+                                "PENDING");
 
-        loan.setStatus("UNKNOWN");
-        loan.setRiskLevel("UNKNOWN");
-        loan.setAdminAction("PENDING");
-        loan.setEligibilityScore(0);
+                long cancelled = repository.countByAdminAction(
+                                "CANCELLED");
 
-        Double emi =
-                calculateEMI(
-                        request.getLoanAmount(),
-                        request.getLoanTenure());
+                long approved = repository.countByStatus(
+                                "APPROVED");
 
-        loan.setMonthlyEmi(emi);
+                long rejected = repository.countByStatus(
+                                "REJECTED");
 
-        loan.setCreatedAt(LocalDateTime.now());
+                double totalLoanAmount = repository.findAll()
+                                .stream()
+                                .filter(loan -> "APPROVED".equalsIgnoreCase(loan.getStatus()))
+                                .mapToDouble(
+                                                LoanApplication::getLoanAmount)
+                                .sum();
 
-        return repository.save(loan);
-    }
+                return new AdminDashboardResponse(
+                                total,
+                                pending,
+                                approved,
+                                rejected,
+                                cancelled,
+                                totalLoanAmount);
+        }
+
+        @Override
+        public List<LoanApplication> getPendingLoans() {
+
+                return repository.findByAdminAction(
+                                "PENDING");
+        }
+
+        public LoanApplication applyLoanFallback(
+                        LoanRequest request,
+                        Exception ex) {
+                System.out.println(
+                                "Fallback Triggered : "
+                                                + ex.getMessage());
+                LoanApplication loan = new LoanApplication();
+
+                loan.setUserId(request.getUserId());
+                loan.setLoanAmount(request.getLoanAmount());
+                loan.setLoanTenure(request.getLoanTenure());
+                loan.setLoanType(request.getLoanType());
+
+                loan.setStatus("PENDING");
+                loan.setRiskLevel("UNKNOWN");
+                loan.setAdminAction("PENDING");
+                loan.setEligibilityScore(0);
+
+                Double emi = calculateEMI(
+                                request.getLoanAmount(),
+                                request.getLoanTenure());
+
+                loan.setMonthlyEmi(emi);
+
+                loan.setCreatedAt(LocalDateTime.now());
+
+                return repository.save(loan);
+        }
 }

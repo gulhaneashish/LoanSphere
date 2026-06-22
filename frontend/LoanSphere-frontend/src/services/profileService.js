@@ -7,3 +7,7 @@ export const createProfile = (profileData) => {
 export const getProfile = (userId) => {
   return api.get(`/api/profile/user/${userId}`);
 };
+
+export const getAllProfiles = () => {
+  return api.get("/api/profile/all");
+};

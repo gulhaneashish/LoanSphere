@@ -1,7 +1,6 @@
 package com.loansphere.user.controller;
 
-
-
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,5 +34,10 @@ public class CustomerProfileController {
 
         return ResponseEntity.ok(
                 service.getProfile(userId));
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<CustomerProfile>> getAllProfiles() {
+        return ResponseEntity.ok(service.getAllProfiles());
     }
 }

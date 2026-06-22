@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getAllLoans } from "../services/loanService";
+import { getCurrentUser } from "../services/authService";
 import Navbar from "../components/Navbar";
 import { FiFileText } from "react-icons/fi";
 import "./Dashboard.css";
@@ -9,16 +10,28 @@ function LoanHistory() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadLoans();
+    const fetchUserAndLoadData = async () => {
+      try {
+        const userRes = await getCurrentUser();
+        if (userRes && userRes.data && userRes.data.userId) {
+          loadLoans(userRes.data.userId);
+        }
+      } catch (error) {
+        console.error("Error fetching user details in LoanHistory:", error);
+      }
+    };
+    fetchUserAndLoadData();
   }, []);
 
-  const loadLoans = async () => {
+  const loadLoans = async (userId) => {
     setLoading(true);
     try {
       const response = await getAllLoans();
       if (response && response.data) {
+        // Filter by user ID first
+        const userLoans = response.data.filter(loan => loan.userId === userId);
         // Sort descending by applicationId to show most recent first
-        const sorted = response.data.sort((a, b) => b.applicationId - a.applicationId);
+        const sorted = userLoans.sort((a, b) => b.applicationId - a.applicationId);
         setLoans(sorted);
       }
     } catch (error) {

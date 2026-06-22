@@ -9,20 +9,21 @@ import com.loansphere.loan.entity.LoanApplication;
 
 public interface LoanService {
 
-    LoanApplication applyLoan(
-            LoanRequest request);
+        LoanApplication applyLoan(
+                        LoanRequest request);
 
-    LoanApplication getLoan(
-            Long applicationId);
-    
-    List<LoanApplication> getAllLoans();
-    DashboardResponse getDashboard();
-    
-    LoanApplication acceptLoan(Long id);
+        LoanApplication getLoan(
+                        Long applicationId);
 
-    LoanApplication cancelLoan(Long id);
-    
-    AdminDashboardResponse getAdminDashboard();
-    
-    List<LoanApplication> getPendingLoans();
+        List<LoanApplication> getAllLoans();
+
+        DashboardResponse getDashboard(Long userId);
+
+        LoanApplication acceptLoan(Long id);
+
+        LoanApplication cancelLoan(Long id);
+
+        AdminDashboardResponse getAdminDashboard();
+
+        List<LoanApplication> getPendingLoans();
 }

@@ -21,6 +21,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+
     public AuthServiceImpl(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
@@ -54,14 +55,13 @@ public class AuthServiceImpl implements AuthService {
 
         return "User Registered Successfully";
     }
-    
+
     @Override
     public AuthResponse login(LoginRequest request) {
 
         User user = userRepository.findByEmail(
                 request.getEmail())
-                .orElseThrow(() ->
-                        new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         if (!passwordEncoder.matches(
                 request.getPassword(),
@@ -69,8 +69,7 @@ public class AuthServiceImpl implements AuthService {
 
             throw new InvalidPasswordException("Invalid Password");
         }
-        String token =
-                jwtUtil.generateToken(user.getEmail());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
         return new AuthResponse(token);
     }
 
@@ -78,6 +77,6 @@ public class AuthServiceImpl implements AuthService {
     public com.loansphere.auth.dto.UserResponse getUserDetailsByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
-        return new com.loansphere.auth.dto.UserResponse(user.getUserId(), user.getName(), user.getEmail());
+        return new com.loansphere.auth.dto.UserResponse(user.getUserId(), user.getName(), user.getEmail(), user.getRole());
     }
 }

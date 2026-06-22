@@ -10,48 +10,48 @@ import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JwtUtil {
-	@Value("${jwt.secret}")
-    private  String secret ;
+    @Value("${jwt.secret}")
+    private String secret;
 
-    public String generateToken(String email) {
+    public String generateToken(String email, String role) {
 
         return Jwts.builder()
                 .subject(email)
+                .claim("role", role)
                 .issuedAt(new Date())
                 .expiration(
                         new Date(System.currentTimeMillis()
                                 + 1000 * 60 * 60))
                 .signWith(
                         Keys.hmacShaKeyFor(
-                        		secret.getBytes()),
+                                secret.getBytes()),
                         Jwts.SIG.HS256)
                 .compact();
     }
-    
+
     public String extractEmail(String token) {
 
         return Jwts.parser()
                 .verifyWith(
                         Keys.hmacShaKeyFor(
-                        		secret.getBytes()))
+                                secret.getBytes()))
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
                 .getSubject();
     }
-    
+
     public boolean validateToken(String token,
             String email) {
 
-String extractedEmail =
-extractEmail(token);
+        String extractedEmail = extractEmail(token);
 
-return extractedEmail.equals(email)
-	       && !isTokenExpired(token);
-}
+        return extractedEmail.equals(email)
+                && !isTokenExpired(token);
+    }
+
     public boolean isTokenExpired(String token) {
-        Date expiration =
-            Jwts.parser()
+        Date expiration = Jwts.parser()
                 .verifyWith(Keys.hmacShaKeyFor(secret.getBytes()))
                 .build()
                 .parseSignedClaims(token)
@@ -60,5 +60,5 @@ return extractedEmail.equals(email)
 
         return expiration.before(new Date());
     }
-    
+
 }

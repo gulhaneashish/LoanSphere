@@ -9,11 +9,12 @@ import com.loansphere.loan.entity.LoanApplication;
 
 @Repository
 public interface LoanApplicationRepository
-        extends JpaRepository<LoanApplication, Long> {
+		extends JpaRepository<LoanApplication, Long> {
 	long countByStatus(String status);
-	
+
 	long countByAdminAction(String adminAction);
 
-	List<LoanApplication>
-	findByAdminAction(String adminAction);
+	List<LoanApplication> findByAdminAction(String adminAction);
+
+	List<LoanApplication> findByUserId(Long userId);
 }

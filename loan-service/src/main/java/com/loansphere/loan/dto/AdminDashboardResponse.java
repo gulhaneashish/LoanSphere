@@ -12,4 +12,5 @@ public class AdminDashboardResponse {
     private Long approvedLoans;
     private Long rejectedLoans;
     private Long cancelledLoans;
+    private Double totalLoanAmount;
 }
