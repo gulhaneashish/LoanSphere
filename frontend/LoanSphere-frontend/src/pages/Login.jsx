@@ -59,7 +59,7 @@ function Login() {
               <div className="feature-icon">
                 <FiCheckCircle />
               </div>
-              <span className="feature-text">AI-powered credit eligibility scoring</span>
+              <span className="feature-text">Automated credit eligibility scoring</span>
             </div>
           </div>
         </div>
