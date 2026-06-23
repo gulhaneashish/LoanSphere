@@ -3,6 +3,7 @@ package com.loansphere.loan.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import com.loansphere.loan.dto.DashboardResponse;
@@ -32,7 +33,7 @@ public class LoanController {
 
     @GetMapping("/{applicationId}")
     public ResponseEntity<LoanApplication> getLoan(
-            @PathVariable Long applicationId) {
+            @PathVariable @NonNull Long applicationId) {
 
         return ResponseEntity.ok(
                 service.getLoan(applicationId));

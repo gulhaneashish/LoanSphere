@@ -3,6 +3,7 @@ package com.loansphere.loan.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -122,7 +123,7 @@ public class LoanServiceImpl
 
         @Override
         public LoanApplication getLoan(
-                        Long applicationId) {
+                        @NonNull Long applicationId) {
 
                 return repository.findById(
                                 applicationId)
@@ -165,7 +166,7 @@ public class LoanServiceImpl
 
         @Override
         public LoanApplication acceptLoan(
-                        Long id) {
+                        @NonNull Long id) {
 
                 LoanApplication loan = repository.findById(id)
                                 .orElseThrow(() -> new LoanNotFoundException(
@@ -182,7 +183,7 @@ public class LoanServiceImpl
 
         @Override
         public LoanApplication cancelLoan(
-                        Long id) {
+                        @NonNull Long id) {
 
                 LoanApplication loan = repository.findById(id)
                                 .orElseThrow(() -> new LoanNotFoundException(

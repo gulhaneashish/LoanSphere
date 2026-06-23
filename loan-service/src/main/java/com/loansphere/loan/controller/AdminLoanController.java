@@ -1,5 +1,6 @@
 package com.loansphere.loan.controller;
 
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 
@@ -36,14 +37,14 @@ public class AdminLoanController {
     }
     @PutMapping("/{id}/accept")
     public LoanApplication acceptLoan(
-            @PathVariable Long id) {
+            @PathVariable @NonNull Long id) {
 
         return service.acceptLoan(id);
     }
 
     @PutMapping("/{id}/cancel")
     public LoanApplication cancelLoan(
-            @PathVariable Long id) {
+            @PathVariable @NonNull Long id) {
 
         return service.cancelLoan(id);
     }

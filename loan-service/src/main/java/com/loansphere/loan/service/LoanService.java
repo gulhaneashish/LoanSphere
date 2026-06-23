@@ -2,6 +2,8 @@ package com.loansphere.loan.service;
 
 import java.util.List;
 
+import org.springframework.lang.NonNull;
+
 import com.loansphere.loan.dto.AdminDashboardResponse;
 import com.loansphere.loan.dto.DashboardResponse;
 import com.loansphere.loan.dto.LoanRequest;
@@ -13,15 +15,15 @@ public interface LoanService {
                         LoanRequest request);
 
         LoanApplication getLoan(
-                        Long applicationId);
+                        @NonNull Long applicationId);
 
         List<LoanApplication> getAllLoans();
 
         DashboardResponse getDashboard(Long userId);
 
-        LoanApplication acceptLoan(Long id);
+        LoanApplication acceptLoan(@NonNull Long id);
 
-        LoanApplication cancelLoan(Long id);
+        LoanApplication cancelLoan(@NonNull Long id);
 
         AdminDashboardResponse getAdminDashboard();
 
