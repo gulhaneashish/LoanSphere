@@ -6,11 +6,16 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.loansphere.auth.util.JwtUtil;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +27,8 @@ public class JwtAuthenticationFilter
 
 	private final JwtUtil jwtUtil;
 	private final CustomUserDetailsService userDetailsService;
+	private static final Logger logger =
+	        LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
 	public JwtAuthenticationFilter(
 	        JwtUtil jwtUtil,
@@ -68,10 +75,28 @@ public class JwtAuthenticationFilter
 				            .setAuthentication(authToken);
 				}
 			}
-		} catch (Exception e) {
-			// Catch any JWT-related exceptions (e.g. signature verification failed, expired, malformed, null/empty)
-			// and let the request proceed. The SecurityContext remains unauthenticated,
-			// so protected routes will still be blocked, but public routes can proceed.
+		} catch (ExpiredJwtException e) {
+		    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+		    response.getWriter().write("JWT Token Expired");
+		    return;
+		}
+
+		catch (MalformedJwtException e) {
+		    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+		    response.getWriter().write("Invalid JWT Token");
+		    return;
+		}
+
+		catch (UsernameNotFoundException e) {
+		    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+		    response.getWriter().write("User Not Found");
+		    return;
+		}
+
+		catch (Exception e) {
+		    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+		    response.getWriter().write("Authentication Failed");
+		    return;
 		}
 		
 		filterChain.doFilter(request,response);

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.loansphere.auth.dto.AuthResponse;
 import com.loansphere.auth.dto.LoginRequest;
 import com.loansphere.auth.dto.RegisterRequest;
+import com.loansphere.auth.dto.UserResponse;
 import com.loansphere.auth.entity.User;
 import com.loansphere.auth.exception.EmailAlreadyExistsException;
 import com.loansphere.auth.exception.InvalidPasswordException;
@@ -74,7 +75,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public com.loansphere.auth.dto.UserResponse getUserDetailsByEmail(String email) {
+    public UserResponse getUserDetailsByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
         return new com.loansphere.auth.dto.UserResponse(user.getUserId(), user.getName(), user.getEmail(),
