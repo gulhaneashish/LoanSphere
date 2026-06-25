@@ -55,8 +55,20 @@ public class LoanServiceImpl
                 loan.setMonthlyEmi(emi);
 
                 // Basic Eligibility Logic
-                CustomerProfileDTO profile = userServiceClient.getProfile(
-                                request.getUserId());
+                CustomerProfileDTO profile = null;
+                try {
+                        profile = userServiceClient.getProfile(request.getUserId());
+                        if (profile == null) {
+                                throw new com.loansphere.loan.exception.ProfileNotUpdatedException(
+                                                "Please add your profile details first");
+                        }
+                } catch (feign.FeignException ex) {
+                        if (ex.status() == 404) {
+                                throw new com.loansphere.loan.exception.ProfileNotUpdatedException(
+                                                "Please add your profile details first");
+                        }
+                        throw ex;
+                }
 
                 int score = 0;
 
@@ -268,6 +280,12 @@ public class LoanServiceImpl
         public LoanApplication applyLoanFallback(
                         LoanRequest request,
                         Exception ex) {
+                if (ex instanceof com.loansphere.loan.exception.ProfileNotUpdatedException) {
+                        throw (com.loansphere.loan.exception.ProfileNotUpdatedException) ex;
+                }
+                if (ex.getCause() instanceof com.loansphere.loan.exception.ProfileNotUpdatedException) {
+                        throw (com.loansphere.loan.exception.ProfileNotUpdatedException) ex.getCause();
+                }
                 System.out.println(
                                 "Fallback Triggered : "
                                                 + ex.getMessage());

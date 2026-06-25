@@ -34,6 +34,17 @@ public class GlobalExceptionHandler {
     }
     
     @ExceptionHandler(
+    		ProfileNotUpdatedException.class)
+    public ResponseEntity<String>
+    handleProfileNotUpdated(
+    		ProfileNotUpdatedException ex) {
+
+        return new ResponseEntity<>(
+                ex.getMessage(),
+                HttpStatus.BAD_REQUEST);
+    }
+    
+    @ExceptionHandler(
     		LoanAlreadyAcceptedExeception.class)
     public ResponseEntity<String>
     handleLoanNotFound(

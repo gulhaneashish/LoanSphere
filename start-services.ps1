@@ -13,7 +13,7 @@ if ($connection.TcpTestSucceeded) {
 } else {
     Write-Host "Warning: MySQL does not appear to be running on localhost:$mysqlPort." -ForegroundColor Red
     Write-Host "Please ensure MySQL is running, the database 'loansphere_db' exists," -ForegroundColor Red
-    Write-Host "and MySQL user is 'root' with password 'Root@7666'." -ForegroundColor Red
+    Write-Host "and MySQL user is 'root' with password 'Pratham@098'." -ForegroundColor Red
 }
 Write-Host ""
 

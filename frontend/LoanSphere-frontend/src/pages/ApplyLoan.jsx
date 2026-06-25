@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { applyLoan } from "../services/loanService";
 import { getCurrentUser } from "../services/authService";
+import { getProfile } from "../services/profileService";
 import Navbar from "../components/Navbar";
 import { FiDollarSign, FiClock, FiFileText } from "react-icons/fi";
 import "./Dashboard.css";
@@ -16,6 +17,7 @@ function ApplyLoan() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [profileUpdated, setProfileUpdated] = useState(true);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -24,10 +26,24 @@ function ApplyLoan() {
       try {
         const userRes = await getCurrentUser();
         if (userRes && userRes.data && userRes.data.userId) {
+          const userId = userRes.data.userId;
           setLoan((prev) => ({
             ...prev,
-            userId: userRes.data.userId,
+            userId: userId,
           }));
+
+          // Check if profile exists / is updated
+          try {
+            await getProfile(userId);
+            setProfileUpdated(true);
+          } catch (profileError) {
+            console.error("Profile check failed:", profileError);
+            setProfileUpdated(false);
+            setMessage({
+              type: "danger",
+              text: "Please add your profile details first",
+            });
+          }
         } else {
           setMessage({
             type: "danger",
@@ -51,6 +67,15 @@ function ApplyLoan() {
     e.preventDefault();
     setSubmitting(true);
     setMessage({ type: "", text: "" });
+
+    if (!profileUpdated) {
+      setMessage({
+        type: "danger",
+        text: "Please add your profile details first",
+      });
+      setSubmitting(false);
+      return;
+    }
 
     if (!loan.userId) {
       setMessage({
@@ -136,7 +161,17 @@ function ApplyLoan() {
             role="alert"
             style={{ borderRadius: "12px", fontSize: "0.95rem" }}
           >
-            {message.text}
+            {message.text === "Please add your profile details first" ? (
+              <span>
+                Please add your profile details first. Go to{" "}
+                <a href="/profile" className="alert-link">
+                  Profile Details
+                </a>{" "}
+                to update.
+              </span>
+            ) : (
+              message.text
+            )}
           </div>
         )}
 
@@ -231,7 +266,7 @@ function ApplyLoan() {
                     <button
                       type="submit"
                       className="btn btn-primary px-5 py-2 fw-bold"
-                      disabled={submitting}
+                      disabled={submitting || !profileUpdated}
                       style={{ borderRadius: "8px" }}
                     >
                       {submitting ? "Submitting Application..." : "Submit Loan Application"}
