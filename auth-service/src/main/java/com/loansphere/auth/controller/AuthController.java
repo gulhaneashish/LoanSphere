@@ -1,5 +1,6 @@
 package com.loansphere.auth.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +26,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(
-            @RequestBody RegisterRequest request) {
+            @RequestBody @Valid RegisterRequest request) {
 
         return ResponseEntity.ok(
                 authService.register(request));
@@ -33,7 +34,7 @@ public class AuthController {
     
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(
-            @RequestBody LoginRequest request) {
+            @RequestBody @Valid LoginRequest request) {
 
         return ResponseEntity.ok(
                 authService.login(request));

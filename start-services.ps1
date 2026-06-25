@@ -34,11 +34,11 @@ Write-Host "[3/3] Launching Microservices in New Terminals" -ForegroundColor Yel
 Write-Host "----------------------------------------------" -ForegroundColor Yellow
 
 $services = @(
-    @{ Name = "Service Registry"; Path = "service-registry"; Cmd = "./mvnw spring-boot:run" },
-    @{ Name = "Auth Service"; Path = "auth-service"; Cmd = "./mvnw spring-boot:run" },
-    @{ Name = "User Service"; Path = "user-service"; Cmd = "./mvnw spring-boot:run" },
-    @{ Name = "Loan Service"; Path = "loan-service"; Cmd = "./mvnw spring-boot:run" },
-    @{ Name = "API Gateway"; Path = "api-gateway"; Cmd = "./mvnw spring-boot:run" },
+    @{ Name = "Service Registry"; Path = "service-registry"; Cmd = ".\mvnw.cmd spring-boot:run" },
+    @{ Name = "Auth Service"; Path = "auth-service"; Cmd = ".\mvnw.cmd spring-boot:run" },
+    @{ Name = "User Service"; Path = "user-service"; Cmd = ".\mvnw.cmd spring-boot:run" },
+    @{ Name = "Loan Service"; Path = "loan-service"; Cmd = ".\mvnw.cmd spring-boot:run" },
+    @{ Name = "API Gateway"; Path = "api-gateway"; Cmd = ".\mvnw.cmd spring-boot:run" },
     @{ Name = "React Frontend"; Path = "frontend/LoanSphere-frontend"; Cmd = "npm run dev" }
 )
 

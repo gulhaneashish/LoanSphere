@@ -2,6 +2,7 @@ package com.loansphere.loan.controller;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,7 @@ public class LoanController {
 
     @PostMapping("/apply")
     public ResponseEntity<LoanApplication> applyLoan(
-            @RequestBody LoanRequest request) {
+            @RequestBody @Valid LoanRequest request) {
 
         return ResponseEntity.ok(
                 service.applyLoan(request));

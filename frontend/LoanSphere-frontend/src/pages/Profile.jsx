@@ -82,14 +82,77 @@ function Profile() {
     setMessage({ type: "", text: "" });
 
     // Payload validation
-    if (!profile.userId || !profile.fullName || !profile.age || !profile.salary) {
+    if (!profile.userId || !profile.fullName.trim() || !profile.age || !profile.salary) {
       setMessage({ type: "danger", text: "Please fill in all required fields." });
       setSaving(false);
       return;
     }
 
+    // Clean inputs
+    const cleanedAadhaar = profile.aadhaarNumber ? profile.aadhaarNumber.replace(/\s/g, "") : "";
+    const cleanedMobile = profile.mobileNumber ? profile.mobileNumber.replace(/[^\d+]/g, "").replace(/^\+91/, "").replace(/\s/g, "") : ""; // handles optional prefix or spaces
+    const cleanedPan = profile.panNumber ? profile.panNumber.replace(/\s/g, "").toUpperCase() : "";
+
+    // Age validation
+    const ageVal = parseInt(profile.age, 10);
+    if (isNaN(ageVal) || ageVal < 18 || ageVal > 100) {
+      setMessage({ type: "danger", text: "Age must be between 18 and 100." });
+      setSaving(false);
+      return;
+    }
+
+    // Salary validation
+    const salaryVal = parseFloat(profile.salary);
+    if (isNaN(salaryVal) || salaryVal < 0) {
+      setMessage({ type: "danger", text: "Annual Salary cannot be negative." });
+      setSaving(false);
+      return;
+    }
+
+    // Experience validation
+    if (profile.experienceYears !== "") {
+      const expVal = parseInt(profile.experienceYears, 10);
+      if (isNaN(expVal) || expVal < 0) {
+        setMessage({ type: "danger", text: "Experience Years cannot be negative." });
+        setSaving(false);
+        return;
+      }
+    }
+
+    // PAN validation
+    if (cleanedPan && !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(cleanedPan)) {
+      setMessage({ type: "danger", text: "Invalid PAN Card Number format (e.g. ABCDE1234F)." });
+      setSaving(false);
+      return;
+    }
+
+    // Aadhaar validation
+    if (cleanedAadhaar && !/^\d{12}$/.test(cleanedAadhaar)) {
+      setMessage({ type: "danger", text: "Aadhaar Card Number must be exactly 12 digits." });
+      setSaving(false);
+      return;
+    }
+
+    // Mobile validation
+    if (cleanedMobile && !/^\d{10}$/.test(cleanedMobile)) {
+      setMessage({ type: "danger", text: "Mobile Number must be exactly 10 digits." });
+      setSaving(false);
+      return;
+    }
+
+    const payload = {
+      ...profile,
+      fullName: profile.fullName.trim(),
+      panNumber: cleanedPan,
+      aadhaarNumber: cleanedAadhaar,
+      mobileNumber: cleanedMobile
+    };
+
+    // Update state with formatted values
+    setProfile(payload);
+
     try {
-      await createProfile(profile);
+      await createProfile(payload);
       setMessage({ 
         type: "success", 
         text: profileExists ? "Financial Profile updated successfully!" : "Financial Profile created successfully!" 

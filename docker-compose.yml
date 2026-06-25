@@ -2,26 +2,111 @@ version: '3.8'
 
 services:
 
+  # MySQL Database Container
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: loansphere_db
+      MYSQL_ROOT_PASSWORD: Pratham@098
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pPratham@098" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Eureka Service Registry
+  service-registry:
+    image: loansphere-registry
+    build:
+      context: ./service-registry
+      dockerfile: Dockerfile
+    container_name: service-registry
+    ports:
+      - "8761:8761"
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+
   auth-service:
     image: loansphere-auth
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
     container_name: auth-service
     ports:
       - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/loansphere_db
+      EUREKA_CLIENT_URL: http://service-registry:8761/eureka
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      service-registry:
+        condition: service_started
 
   user-service:
     image: loansphere-user
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
     container_name: user-service
     ports:
       - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/loansphere_db
+      EUREKA_CLIENT_URL: http://service-registry:8761/eureka
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      service-registry:
+        condition: service_started
 
   loan-service:
     image: loansphere-loan
+    build:
+      context: ./loan-service
+      dockerfile: Dockerfile
     container_name: loan-service
     ports:
       - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/loansphere_db
+      EUREKA_CLIENT_URL: http://service-registry:8761/eureka
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      service-registry:
+        condition: service_started
 
   api-gateway:
     image: loansphere-gateway
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
     container_name: api-gateway
     ports:
       - "8090:8090"
+    environment:
+      EUREKA_CLIENT_URL: http://service-registry:8761/eureka
+    depends_on:
+      service-registry:
+        condition: service_started
+
+  frontend:
+    image: loansphere-frontend
+    build:
+      context: ./frontend/LoanSphere-frontend
+      dockerfile: Dockerfile
+    container_name: loansphere-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - api-gateway
+
+volumes:
+  mysql-data:

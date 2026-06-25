@@ -53,13 +53,21 @@ function AdminPendingLoans() {
     const risk = loan.riskLevel?.toUpperCase();
     const score = loan.eligibilityScore || 0;
     
+    if (risk === "HIGH") {
+      return {
+        text: "RECOMMENDED: REJECT",
+        class: "text-danger border-danger bg-danger-subtle",
+        badge: "bg-danger text-white"
+      };
+    }
+    
     if (risk === "LOW" || risk === "MEDIUM" || score >= 60) {
       return {
         text: "RECOMMENDED: APPROVE",
         class: "text-success border-success bg-success-subtle",
         badge: "bg-success text-white"
       };
-    } else if (risk === "HIGH" || score < 60) {
+    } else if (score < 60) {
       return {
         text: "RECOMMENDED: REJECT",
         class: "text-danger border-danger bg-danger-subtle",

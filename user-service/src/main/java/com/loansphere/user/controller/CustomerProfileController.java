@@ -1,6 +1,7 @@
 package com.loansphere.user.controller;
 
 import java.util.List;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +23,7 @@ public class CustomerProfileController {
 
     @PostMapping
     public ResponseEntity<String> createProfile(
-            @RequestBody ProfileRequest request) {
+            @RequestBody @Valid ProfileRequest request) {
 
         return ResponseEntity.ok(
                 service.createProfile(request));

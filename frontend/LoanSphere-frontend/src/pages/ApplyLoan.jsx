@@ -70,6 +70,27 @@ function ApplyLoan() {
       return;
     }
 
+    // Client-side validations
+    const amountVal = parseFloat(loan.loanAmount);
+    if (isNaN(amountVal) || amountVal < 1000) {
+      setMessage({
+        type: "danger",
+        text: "Minimum loan amount is ₹1,000.",
+      });
+      setSubmitting(false);
+      return;
+    }
+
+    const tenureVal = parseInt(loan.loanTenure, 10);
+    if (isNaN(tenureVal) || tenureVal < 1) {
+      setMessage({
+        type: "danger",
+        text: "Minimum tenure is 1 month.",
+      });
+      setSubmitting(false);
+      return;
+    }
+
     try {
       await applyLoan(loan);
       setMessage({

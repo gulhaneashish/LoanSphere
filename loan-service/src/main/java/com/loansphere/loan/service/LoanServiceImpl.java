@@ -47,8 +47,14 @@ public class LoanServiceImpl
                 loan.setLoanType(
                                 request.getLoanType());
 
-                // Basic Eligibility Logic
+                // Calculate EMI first so it can be used in eligibility and risk calculations
+                Double emi = 0.0;
+                if (request.getLoanAmount() != null && request.getLoanTenure() != null && request.getLoanTenure() > 0) {
+                        emi = calculateEMI(request.getLoanAmount(), request.getLoanTenure());
+                }
+                loan.setMonthlyEmi(emi);
 
+                // Basic Eligibility Logic
                 CustomerProfileDTO profile = userServiceClient.getProfile(
                                 request.getUserId());
 
@@ -76,28 +82,49 @@ public class LoanServiceImpl
                                                                         profile.getEmploymentType())))
                                 score += 10;
                 }
+
+                // Salary & Amount Risk Adjustments
+                double annualSalary = (profile != null && profile.getSalary() != null) ? profile.getSalary() : 0.0;
+                double monthlySalary = annualSalary / 12.0;
+                double loanAmount = request.getLoanAmount() != null ? request.getLoanAmount() : 0.0;
+                double emiValue = emi != null ? emi : 0.0;
+
+                boolean isHighRisk = false;
+                boolean isMediumRisk = false;
+
+                if (annualSalary <= 0.0) {
+                        isHighRisk = true;
+                } else {
+                        double loanToSalaryRatio = loanAmount / annualSalary;
+                        double emiToIncomeRatio = emiValue / monthlySalary;
+
+                        if (loanToSalaryRatio > 3.0 || emiToIncomeRatio > 0.5) {
+                                isHighRisk = true;
+                                score = Math.max(0, score - 40); // Penalty for very high debt
+                        } else if (loanToSalaryRatio > 1.5 || emiToIncomeRatio > 0.3) {
+                                isMediumRisk = true;
+                                score = Math.max(0, score - 20); // Penalty for medium debt
+                        }
+                }
+
                 loan.setEligibilityScore(score);
 
-                if (score >= 80) {
-
-                        loan.setRiskLevel("LOW");
-
-                } else if (score >= 60) {
-
-                        loan.setRiskLevel("MEDIUM");
-
-                } else {
-
+                if (isHighRisk) {
                         loan.setRiskLevel("HIGH");
+                } else if (isMediumRisk) {
+                        loan.setRiskLevel("MEDIUM");
+                } else {
+                        if (score >= 80) {
+                                loan.setRiskLevel("LOW");
+                        } else if (score >= 60) {
+                                loan.setRiskLevel("MEDIUM");
+                        } else {
+                                loan.setRiskLevel("HIGH");
+                        }
                 }
+
                 loan.setStatus("PENDING");
                 loan.setAdminAction("PENDING");
-                Double emi = calculateEMI(
-                                request.getLoanAmount(),
-                                request.getLoanTenure());
-
-                loan.setMonthlyEmi(emi);
-
                 loan.setCreatedAt(LocalDateTime.now());
 
                 return repository.save(loan);

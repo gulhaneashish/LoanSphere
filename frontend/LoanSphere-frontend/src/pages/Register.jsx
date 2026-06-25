@@ -17,6 +17,24 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus({ type: "", message: "" });
+
+    // Client-side validations
+    if (!form.name.trim()) {
+      setStatus({ type: "danger", message: "Full Name is required." });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      setStatus({ type: "danger", message: "Please enter a valid email address." });
+      return;
+    }
+
+    if (!form.password || form.password.length < 6) {
+      setStatus({ type: "danger", message: "Password must be at least 6 characters long." });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -141,7 +159,7 @@ function Register() {
           </form>
 
           <div className="form-footer">
-            Already have an account? 
+            Already have an account?
             <Link to="/">Sign in here</Link>
           </div>
         </div>

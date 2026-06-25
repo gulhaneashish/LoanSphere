@@ -77,6 +77,7 @@ public class AuthServiceImpl implements AuthService {
     public com.loansphere.auth.dto.UserResponse getUserDetailsByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
-        return new com.loansphere.auth.dto.UserResponse(user.getUserId(), user.getName(), user.getEmail(), user.getRole());
+        return new com.loansphere.auth.dto.UserResponse(user.getUserId(), user.getName(), user.getEmail(),
+                user.getRole());
     }
 }

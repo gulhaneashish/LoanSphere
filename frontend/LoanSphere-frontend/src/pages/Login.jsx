@@ -16,6 +16,18 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      setErrorMsg("Please enter a valid email address.");
+      return;
+    }
+
+    if (!form.password) {
+      setErrorMsg("Password is required.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -118,7 +130,7 @@ function Login() {
           </form>
 
           <div className="form-footer">
-            Don't have an account? 
+            Don't have an account?
             <Link to="/register">Register here</Link>
           </div>
         </div>
